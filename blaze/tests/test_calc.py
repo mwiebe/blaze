@@ -64,6 +64,10 @@ class TestReduction(unittest.TestCase):
         self.assertRaises(ValueError, blaze.eval, blaze.min([[], []],
                                                             axis=-1,
                                                             keepdims=True))
+        # Special case of empty array that can't be autodetected
+        # from a Python array
+        self.assertRaises(ValueError, blaze.eval,
+                          blaze.min(blaze.zeros('0 * 1000 * 1000 * int64')))
         # However, if we're only reducing on a non-empty dimension, it's ok
         self.assertEqual(dd_as_py(blaze.eval(blaze.min([[], []],
                                                        axis=0))._data),
@@ -155,6 +159,15 @@ class TestReduction(unittest.TestCase):
                                                             axis=-1,
                                                             keepdims=True))._data),
                          [[0], [0]])
+        # Special cases of empty array that can't be automatically detected
+        # from a Python array
+        self.assertEqual(dd_as_py(blaze.eval(blaze.sum(
+                                blaze.zeros('0 * 1000 * 1000 * int64')))._data),
+                         0)
+        self.assertEqual(dd_as_py(blaze.eval(blaze.sum(
+                                blaze.zeros('0 * 3 * 2 * int64'),
+                                axis=0))._data),
+                         [[0, 0], [0, 0], [0, 0]])
         # If we're only reducing on a non-empty dimension, we might still
         # end up with zero-sized outputs
         self.assertEqual(dd_as_py(blaze.eval(blaze.sum([[], []],
